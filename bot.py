@@ -1,41 +1,52 @@
 import os
+import sys
 import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# Enable logging to see what's happening in the Render logs
+# Initialize standard platform logging
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", 
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# Define the /start command response
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    welcome_message = (
-        "Welcome!\n\n"
-        "Thanks for joining. Use /start to begin and explore what I can do."
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Delivers the exact custom Khmer welcome dispatch when a user invokes /start."""
+    welcome_text = (
+        "សូមស្វាគមន៍មកកាន់ Nova News! 🚀\n\n"
+        "ផ្លូវកាត់របស់អ្នកទៅកាន់ចំណងជើងសំខាន់ៗរបស់ពិភពលោក។ "
+        "ទទួលបានព័ត៌មានថ្មីៗតាមពេលវេលាជាក់ស្តែង រៀបចំព្រឹត្តិការណ៍ជាសកល បច្ចេកវិទ្យា និងហិរញ្ញវត្ថុ ដោយគ្មានបញ្ហា។\n\n"
+        "📌 ចុចលើ Start ដើម្បីប្ដូរព័ត៌មានរបស់អ្នកភ្លាមៗ"
     )
-    # This sends the message back to whoever triggered the command
-    await update.message.reply_text(welcome_message)
+    
+    # Send response back to the user context
+    if update.effective_message:
+        await update.effective_message.reply_text(welcome_text)
+        logger.info(f"Successfully processed /start for unique ID: {update.effective_user.id if update.effective_user else 'Unknown'}")
 
-def main():
-    # Fetch the token from Render's environment variables
-    TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+def main() -> None:
+    # Safely fetch credentials from deployment parameters
+    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
     
     if not TOKEN:
-        logger.error("No bot token found! Make sure TELEGRAM_BOT_TOKEN is set in Render.")
-        return
+        logger.critical("🛑 FATAL: 'TELEGRAM_BOT_TOKEN' environment variable is missing on Render settings.")
+        sys.exit(1)
 
-    # Build the application
+    # Sanitize inputs to prevent trailing whitespaces
+    TOKEN = TOKEN.strip()
+
+    logger.info("Initializing asynchronous framework instance...")
+    
+    # Compile the polling application instance
     application = Application.builder().token(TOKEN).build()
 
-    # Register the /start command handler
-    application.add_handler(CommandHandler("start", start))
+    # Bind the structural start command string to our async callback
+    application.add_handler(CommandHandler("start", start_command))
 
-    # Start the bot using Long Polling (ideal for Background Workers)
-    logger.info("Bot is starting...")
+    # Engage the perpetual polling loop
+    logger.info("🚀 Connection established! Application is actively polling for incoming traffic...")
     application.run_polling()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
