@@ -14,10 +14,8 @@ logger = logging.getLogger(__name__)
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Delivers the exact custom Khmer welcome dispatch when a user invokes /start."""
     welcome_text = (
-        "សូមស្វាគមន៍មកកាន់ Nova News! 🚀\n\n"
-        "ផ្លូវកាត់របស់អ្នកទៅកាន់ចំណងជើងសំខាន់ៗរបស់ពិភពលោក។ "
-        "ទទួលបានព័ត៌មានថ្មីៗតាមពេលវេលាជាក់ស្តែង រៀបចំព្រឹត្តិការណ៍ជាសកល បច្ចេកវិទ្យា និងហិរញ្ញវត្ថុ ដោយគ្មានបញ្ហា។\n\n"
-        "📌 ចុចលើ Start ដើម្បីប្ដូរព័ត៌មានរបស់អ្នកភ្លាមៗ"
+        "Welcome!\n\n"
+        "Thanks for joining. Use /start to begin and explore what I can do."
     )
     
     # Send response back to the user context
