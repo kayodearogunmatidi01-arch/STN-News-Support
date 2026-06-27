@@ -1,55 +1,25 @@
 import os
-import logging
-import asyncio
-import nest_asyncio
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+import telebot
 
-# Apply the nested async patch for background environments
-nest_asyncio.apply()
+# Fetch the token from Render's environment variables
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
 
-# Setup logging to Render dashboard
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+if not BOT_TOKEN:
+    raise ValueError("No BOT_TOKEN found in environment variables!")
 
-# /start command logic
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    welcome_message = (
-        "Welcome!\n\n"
-        "Thanks for joining. Use /start to begin and explore what I can do."
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# This decorator listens for the /start command from ANY user
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    welcome_text = (
+        "Welcome! This bot helps answer questions and provides useful information. "
+        "You can also follow our official channel for updates: https://t.me/GMKChannel"
     )
-    logger.info(f"User {update.effective_user.id} started the bot.")
-    await update.message.reply_text(welcome_message)
+    # Reply directly to the user who started the bot
+    bot.reply_to(message, welcome_text)
 
-async def main():
-    TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-    
-    if not TOKEN:
-        logger.error("CRITICAL: TELEGRAM_BOT_TOKEN is missing in Render environment variables!")
-        return
-
-    logger.info("Initializing Telegram Bot Application...")
-    application = Application.builder().token(TOKEN).build()
-
-    # Register the start handler
-    application.add_handler(CommandHandler("start", start))
-
-    # Initialize and start polling explicitly for background tasks
-    await application.initialize()
-    await application.start()
-    
-    logger.info("Bot is successfully polling Telegram servers...")
-    await application.updater.start_polling(allowed_updates=Update.ALL_TYPES)
-    
-    # Keeps the loop running indefinitely on the Render Background Worker
-    while True:
-        await asyncio.sleep(3600)
-
-if __name__ == '__main__':
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        logger.info("Bot stopped.")
+if __name__ == "__main__":
+    print("Bot is starting up...")
+    # non_stop=True ensures the bot stays alive even if it encounters temporary network errors
+    bot.infinity_polling(non_stop=True)
